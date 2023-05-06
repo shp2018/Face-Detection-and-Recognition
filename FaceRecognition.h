@@ -62,7 +62,7 @@ void detectAndDisplay(Mat frame)
 		resize(crop, res, Size(128, 128), 0, 0, INTER_LINEAR);
 		cvtColor(crop, gray, COLOR_BGR2GRAY);
 		stringstream ssfn;
-		filename = "/Users/kevinpark/Desktop/Face";
+		filename = "/Users/kevinpark/Desktop/Face/";
 		ssfn << filename.c_str() << name << filenumber << ".jpg";
 		filename = ssfn.str();
 		imwrite(filename, res);
@@ -104,14 +104,13 @@ void addFace()
     };
 
     Mat frame;
-	cout << "\nCapturing your face 10 times, Press 'C' 10 times keeping your face front of the camera";
+	cout << "\nCapturing your face 10 times, Press 'C' to exit";
 	char key;
 	int i = 0;
 
     for (;;)
     {
         capture >> frame;
-
 		detectAndDisplay(frame);
 		i++;
 		if (i == 10)
@@ -133,9 +132,10 @@ void addFace()
 
 static void dbread(vector<Mat>& images, vector<int>& labels) {
 	vector<cv::String> fn;
-	filename = "/Users/kevinpark/Desktop/Face";
+	filename = "/Users/kevinpark/Desktop/Face/";
 	glob(filename, fn, false);
-
+	
+	glob("/Users/kevinpark/Desktop/Face/*.jpg", fn, false);
 
 	size_t count = fn.size();
 
@@ -163,10 +163,9 @@ void eigenFaceTrainer() {
 
 	Ptr<EigenFaceRecognizer> model = EigenFaceRecognizer::create();
 
-
 	model->train(images, labels);
 
-	model->save("Users/kevinpark/Desktop/eigenface.yml");
+	model->save("/Users/kevinpark/Desktop/eigenface.yml");
 
 	cout << "Training finished...." << endl;  
 	waitKey(10000);
@@ -176,7 +175,7 @@ void  FaceRecognition() {
 
 	cout << "start recognizing..." << endl;
 
-
+	//load pre-trained data sets
 	Ptr<FaceRecognizer>  model = FisherFaceRecognizer::create();
 	model->read("/Users/kevinpark/Desktop/eigenface.yml");
 
@@ -184,6 +183,7 @@ void  FaceRecognition() {
 
 	int img_width = testSample.cols;
 	int img_height = testSample.rows;
+
 
 
 	string window = "Capture - face detection";
@@ -195,13 +195,11 @@ void  FaceRecognition() {
 
 	VideoCapture cap(0);
 
-
 	if (!cap.isOpened())
 	{
 		cout << "exit" << endl;
 		return;
 	}
-
 
 	namedWindow(window, 1);
 	long count = 0;
@@ -218,9 +216,7 @@ void  FaceRecognition() {
 		count = count + 1;
 
 		if (!frame.empty()) {
-
 			original = frame.clone();
-
 			cvtColor(original, graySacleFrame, COLOR_BGR2GRAY);
 
 			face_cascade.detectMultiScale(graySacleFrame, faces, 1.1, 3, 0, cv::Size(90, 90));
@@ -229,6 +225,7 @@ void  FaceRecognition() {
 			std::string faceset = std::to_string(faces.size());
 
 			int width = 0, height = 0;
+
 
 			for (int i = 0; i < faces.size(); i++)
 			{
@@ -246,22 +243,20 @@ void  FaceRecognition() {
 				cout << " confidence " << confidence << " Label: " << label << endl;
 				
 				Pname = to_string(label);
+
 				rectangle(original, face_i, CV_RGB(0, 255, 0), 1);
 				string text = Pname;
 
 				int pos_x = std::max(face_i.tl().x - 10, 0);
 				int pos_y = std::max(face_i.tl().y - 10, 0);
 
-
 				putText(original, text, Point(pos_x, pos_y), FONT_HERSHEY_COMPLEX_SMALL, 1.0, CV_RGB(0, 255, 0), 1.0);
-
 
 			}
 
 
 			putText(original, "Frames: " + frameset, Point(30, 60), FONT_HERSHEY_COMPLEX_SMALL, 1.0, CV_RGB(0, 255, 0), 1.0);
 			putText(original, "No. of Persons detected: " + to_string(faces.size()), Point(30, 90), FONT_HERSHEY_COMPLEX_SMALL, 1.0, CV_RGB(0, 255, 0), 1.0);
-
 			cv::imshow(window, original);
 
 
@@ -269,4 +264,3 @@ void  FaceRecognition() {
 		if (waitKey(30) >= 0) break;
 	}
 }
-	
